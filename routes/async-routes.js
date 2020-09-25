@@ -13,7 +13,7 @@ module.exports = async function initRoutes(router) {
     private_key: process.env.GOOGLE_PRIVATE_KEY, // suround with double quotes in .env
   })
   await doc.loadInfo() // loads document properties and worksheets
-  console.log(`Loaded: ${doc.title}`)
+  console.log(`Loaded Sheet: ${doc.title}`)
 
   async function getRows(sheetIndex = 0) {
     const sheet = doc.sheetsByIndex[sheetIndex]
@@ -51,6 +51,50 @@ module.exports = async function initRoutes(router) {
     getRowsResponse(req, res, req.params.sheetIndex)
   });
 
+  router.post('/add-row', async (req, res) => {
+    if (!req.body) {
+      res.status(400).send(`Missing ${req.method} body`)
+      return
+    }
+
+    const sheetIndex = hasOwnProperty(req.body, 'sheetIndex') ? req.body.sheetIndex : 0
+
+    if (Object.keys(req.body).length === 0) {
+      res.status(400).send(`${req.method} body is present, but empty - Is 'content-type' header set?`)
+      return
+    }
+
+    if (!hasOwnProperty(req.body, 'headers')) {
+      res.status(400).send(`Missing required property 'headers' in ${req.method} body`)
+      return
+    }
+    const headers = req.body.headers
+
+    if (!hasOwnProperty(req.body, 'rows')) {
+      res.status(400).send(`Missing required property 'rows' in ${req.method} body`)
+      return
+    }
+    const rows = req.body.rows
+
+    try {
+      const rowsArr = rows.map(row => {
+        return headers.reduce((acc, cur, i) => {
+          acc[cur] = row[i]
+          return acc
+        }, {})
+      })
+
+      const sheet = doc.sheetsByIndex[sheetIndex]
+
+      await sheet.addRows(rowsArr) // save new rows
+
+      getRowsResponse(req, res, sheetIndex)
+    } catch(e) {
+      console.error(e)
+      res.status(500).send('Internal server error')
+    }
+  })
+
   router.put('/update-cell', async (req, res) => {
     /*
       * {
@@ -61,31 +105,31 @@ module.exports = async function initRoutes(router) {
       * }
       */
     if (!req.body) {
-      res.status(400).send('Missing PUT body')
+      res.status(400).send(`Missing ${req.method} body`)
       return
     }
 
     const sheetIndex = hasOwnProperty(req.body, 'sheetIndex') ? req.body.sheetIndex : 0
 
     if (Object.keys(req.body).length === 0) {
-      res.status(400).send('PUT body is present, but empty, is `content-type` header set?')
+      res.status(400).send(`${req.method} body is present, but empty - Is 'content-type' header set?`)
       return
     }
 
     if (!hasOwnProperty(req.body, 'columnName')) {
-      res.status(400).send('Missing required property `columnName` in PUT body')
+      res.status(400).send(`Missing required property 'columnName' in ${req.method} body`)
       return
     }
     const columnName = req.body.columnName
 
     if (!hasOwnProperty(req.body, 'value')) {
-      res.status(400).send('Missing required property `value` in PUT body')
+      res.status(400).send(`Missing required property 'value' in ${req.method} body`)
       return
     }
     const value = req.body.value
 
     if (!hasOwnProperty(req.body, 'rowIndex')) {
-      res.status(400).send('Missing required property `rowIndex` in PUT body')
+      res.status(400).send(`Missing required property 'rowIndex' in ${req.method} body`)
       return
     }
     const rowIndex = Number(req.body.rowIndex)
@@ -93,7 +137,7 @@ module.exports = async function initRoutes(router) {
     const rows = await getRows(sheetIndex) // can pass in { limit, offset }
 
     if (rows.length < rowIndex) {
-      res.status(409).send(`Property 'rowIndex' (provided in PUT body) of ${rowIndex} is out of range (rows.length == ${rows.length})`)
+      res.status(409).send(`Property 'rowIndex' (provided in ${req.method} body) of ${rowIndex} is out of range (rows.length == ${rows.length})`)
       return
     }
 

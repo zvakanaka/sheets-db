@@ -1,4 +1,5 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet')
+const hasOwnProperty = (obj, propertyName) => Object.prototype.hasOwnProperty.call(obj, propertyName)
 
 const SHEET_ID = process.env.SHEET_ID // the long id in the sheets URL
 const VALID_COLUMNS = process.env?.VALID_COLUMNS?.split(',') ?? []
@@ -96,6 +97,10 @@ module.exports = async function initRoutes(router) {
       return
     }
 
+    if (rowIndex >= rows.length - 1) {
+      res.status(404).send(`Row index ${rowIndex} does not yet exist`)
+      return
+    }
     if (!hasOwnProperty(rows[rowIndex], columnName)) {
       res.status(404).send(`Column name '${columnName}' not found for sheet ${sheetIndex}`)
       return
@@ -110,11 +115,11 @@ module.exports = async function initRoutes(router) {
         return
       }
       rows[rowIndex][columnName] = value
-      const statusUpdateColumnName = 'Last Status Update'
-      if (!hasOwnProperty(rows[rowIndex], statusUpdateColumnName)) {
-        console.warn(`Column name '${statusUpdateColumnName}' not found, please create one for sheet ${sheetIndex}`)
+      const lastUpdateColumnName = 'time'
+      if (!hasOwnProperty(rows[rowIndex], lastUpdateColumnName)) {
+        console.warn(`Column name '${lastUpdateColumnName}' not found, please create one for sheet ${sheetIndex}`)
       } else {
-        rows[rowIndex][statusUpdateColumnName] = new Date().toUTCString()
+        rows[rowIndex][lastUpdateColumnName] = new Date().toUTCString()
       }
       await rows[rowIndex].save()
       getRowsResponse(req, res, sheetIndex)

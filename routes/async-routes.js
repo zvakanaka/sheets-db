@@ -51,7 +51,7 @@ module.exports = async function initRoutes(router) {
     getRowsResponse(req, res, req.params.sheetIndex)
   });
 
-  router.post('/add-row', async (req, res) => {
+  router.post('/add-rows', async (req, res) => {
     if (!req.body) {
       res.status(400).send(`Missing ${req.method} body`)
       return

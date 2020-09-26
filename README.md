@@ -1,4 +1,17 @@
 # Google Sheets as a Database
+## Install
+`git clone https://github.com/zvakanaka/sheets-db.git`  
+`cd sheets-db`  
+`npm install`  
+Set up a Service Account by following instructions [here](https://theoephraim.github.io/node-google-spreadsheet/#/getting-started/authentication?id=service-account)  
+  
+Create a `.env` file in the `sheets-db` directory with the following contents:
+```
+GOOGLE_SERVICE_ACCOUNT_EMAIL=<YOUR_SERVICE_ACCOUNT_EMAIL_IS_NOT_YOUR_EMAIL>
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nAndSoForth"
+```  
+  
+`npm start`  
 ## Update Cell
 ```sh
 curl -X PUT http://localhost:3000/update-cell \
@@ -14,12 +27,12 @@ curl -X PUT http://localhost:3000/update-cell \
 
 ## Add Rows
 ```sh
-curl -X POST http://localhost:3000/add-row \
+curl -X POST http://localhost:3000/add-rows \
 --header 'content-type: application/json' \
 --data '{
   "sheetIndex": 0,
-  "headers": [ "title", "bookmark", "time" ],
-  "rows": [[ "My GitHub Blog", "https://zvakanaka.github.io", "Fri, 25 Sep 2020 04:49:22 GMT" ]],
+  "headers": [ "title", "bookmark", "tags", "time" ],
+  "rows": [[ "My GitHub Blog", "https://zvakanaka.github.io", "blog,code", "Fri, 25 Sep 2020 04:49:22 GMT" ]],
   "readBack": true
 }'
 ```
@@ -28,24 +41,27 @@ curl -X POST http://localhost:3000/add-row \
 ```sh
 curl http://localhost:3000/rows
 ```
-Example Output:
+Output:
 ```json
 {
   "headers": [
     "title",
     "bookmark",
+    "tags",
     "time"
   ],
   "rows": [
     [
       "My GitHub Blog",
       "https://zvakanaka.github.io",
+      "blog,code",
       "Fri, 25 Sep 2020 04:49:22 GMT"
     ],
     [
       "Hacker News",
       "https://news.ycombinator.com/best",
-      "Fri, 25 Sep 2020 05:30:02 GMT"
+      "news,cs",
+      "Fri, 25 Sep 2020 04:50:30 GMT"
     ]
   ]
 }
@@ -60,7 +76,7 @@ curl http://localhost:3000/rows/0
 ```sh
 curl http://localhost:3000/sheets
 ```
-Example Output:
+Output:
 ```json
 {
   "count": 1,
@@ -70,3 +86,8 @@ Example Output:
 }
 ```
 
+## Credit
+[theoephraim/node-google-spreadsheet](https://github.com/theoephraim/node-google-spreadsheet)
+
+## License
+This is free and unencumbered public domain software. For more info, see https://unlicense.org.

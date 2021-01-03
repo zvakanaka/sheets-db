@@ -2,8 +2,8 @@ const { GoogleSpreadsheet } = require('google-spreadsheet')
 const hasOwnProperty = (obj, propertyName) => Object.prototype.hasOwnProperty.call(obj, propertyName)
 
 const SHEET_ID = process.env.SHEET_ID // the long id in the sheets URL
-const VALID_COLUMNS = process.env?.VALID_COLUMNS?.split(',') ?? []
-const VALID_VALUES = process.env?.VALID_VALUES?.split(',') ?? [] // value with typeof number is also allowed
+const VALID_COLUMNS = process.env.VALID_COLUMNS ? process.env.VALID_COLUMNS.split(',') : []
+const VALID_VALUES = process.env.VALID_VALUES ? process.env.VALID_VALUES.split(',') : [] // value with typeof number is also allowed
 
 const doc = new GoogleSpreadsheet(SHEET_ID)
 

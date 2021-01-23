@@ -141,7 +141,7 @@ module.exports = async function initRoutes(router) {
       return
     }
 
-    if (rowIndex >= rows.length - 1) {
+    if (rowIndex >= rows.length) {
       res.status(404).send(`Row index ${rowIndex} does not yet exist`)
       return
     }
